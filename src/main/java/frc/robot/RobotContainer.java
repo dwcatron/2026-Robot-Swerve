@@ -86,7 +86,8 @@ public class RobotContainer {
     }
 
     private double getLimelightDistance() {
-        double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+        // UPDATED NAME HERE
+        double ty = NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("ty").getDouble(0);
         return (2.6 - 0.5) / Math.tan(Math.toRadians(30.0 + ty));
     }
 
@@ -161,9 +162,21 @@ public class RobotContainer {
             new TurretTrackTarget(m_turret, () -> getLimelightAngle(), this) 
         );
 
-        m_operatorController.povUp().whileTrue(m_climber.run(() -> m_climber.moveManual(0.2)));
-        m_operatorController.povDown().whileTrue(m_climber.run(() -> m_climber.moveManual(-0.2)));
-        m_operatorController.povCenter().onTrue(m_climber.runOnce(() -> m_climber.moveManual(0)));
+        // Move Up while holding POV Up
+        m_operatorController.povUp().whileTrue(
+            m_climber.startEnd(
+                () -> m_climber.moveManual(0.2), // Start action
+                () -> m_climber.stopMotor()      // End action
+            )
+        );
+
+        // Move Down while holding POV Down
+        m_operatorController.povDown().whileTrue(
+            m_climber.startEnd(
+                () -> m_climber.moveManual(-0.2), // Start action
+                () -> m_climber.stopMotor()       // End action
+            )
+        );
 
         m_operatorController.y().onTrue(new SequentialCommandGroup(
             new L_Three_Climb(m_climber, 22.0),
@@ -209,8 +222,9 @@ public class RobotContainer {
         ShuffleboardTab driverTab = Shuffleboard.getTab("Driver");
 
         driverTab.addBoolean("READY TO FIRE", () -> {
-            boolean hasTarget = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0) == 1.0;
-            boolean turretLocked = Math.abs(NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0)) < 2.0;
+            // UPDATED NAMES HERE
+            boolean hasTarget = NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("tv").getDouble(0) == 1.0;
+            boolean turretLocked = Math.abs(NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("tx").getDouble(0)) < 2.0;
             boolean shooterReady = m_shooter.isAtSpeed(100);
             return hasTarget && turretLocked && shooterReady;
         })
@@ -238,14 +252,34 @@ public class RobotContainer {
         .withPosition(3, 2)
         .withSize(4, 1)
         .withProperties(Map.of("min", 0, "max", 20)); 
+
+        // --- NEW: LIMELIGHT 4 (FUEL) SHUFFLEBOARD WIDGETS ---
+        
+        // 1. A box that turns Green when the LL4 sees fuel, Red when it doesn't
+        driverTab.addBoolean("Fuel Spotted", () -> 
+            NetworkTableInstance.getDefault().getTable("limelight-fuel").getEntry("tv").getDouble(0) == 1.0)
+        .withWidget(BuiltInWidgets.kBooleanBox)
+        .withPosition(7, 0) 
+        .withSize(2, 2)
+        .withProperties(Map.of("Color when true", "Lime", "Color when false", "Red"));
+
+        // 2. A bar showing how far left or right the fuel is from the center
+        driverTab.addDouble("Fuel X Offset", () -> 
+            NetworkTableInstance.getDefault().getTable("limelight-fuel").getEntry("tx").getDouble(0.0))
+        .withWidget(BuiltInWidgets.kNumberBar)
+        .withPosition(7, 2) 
+        .withSize(2, 1)
+        .withProperties(Map.of("min", -30, "max", 30)); 
     }
 
     public double getLimelightAngle() {
-        return m_turret.getAngle() + NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0.0);
+        // UPDATED NAME HERE
+        return m_turret.getAngle() + NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("tx").getDouble(0.0);
     }
 
     public void setLimelightPipeline(int pipeline) {
-        NetworkTableInstance.getDefault().getTable("limelight").getEntry("pipeline").setNumber(pipeline);
+        // UPDATED NAME HERE
+        NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("pipeline").setNumber(pipeline);
     }
 
     public Command systemCheckCommand() {

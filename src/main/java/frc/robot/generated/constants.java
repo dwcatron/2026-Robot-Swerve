@@ -21,7 +21,7 @@ public class constants {
      public static final int kTurretEncoderCanId = 31;
      public static final double kTurretMinAngle = -90.0; // Degrees
      public static final double kTurretMaxAngle = 90.0;  // Degrees
-     public static final double kTurretOffset = -141.328125; // rawDegrees when turret points perfectly forward
+     public static final double kTurretOffset = -136.328125; // rawDegrees when turret points perfectly forward
 
     //Hopper
      public static final int kHopper_LeftCanId = 23;

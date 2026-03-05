@@ -1,0 +1,17 @@
+{
+  "Connections": {
+    "open": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "10.66.42.2"
+  },
+  "transitory": {
+    "CameraPublisher": {
+      "open": true
+    },
+    "limelight-tauret": {
+      "open": true
+    }
+  }
+}
