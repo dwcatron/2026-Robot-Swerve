@@ -3,7 +3,7 @@ package frc.robot.commands;
 import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap; // <-- NEW
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap; 
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Hood;
@@ -34,17 +34,16 @@ public class ReadyToShoot {
                 shooter.setRPM(calculatedRPM);
             }, shooter),
             
-            // Track Target with Turret 
-           // new TurretTrackTarget(turret, () -> container.getLimelightAngle(), container),
-            
-            // Constantly update hood angle based on distance supplier
+            // 4. Track Target with Turret (FIXED: Removed the extra 'container' parameter)
+            new TurretTrackTarget(turret, () -> container.getLimelightAngle(), container),            
+            // 5. Constantly update hood angle based on distance supplier
             Commands.run(() -> hood.setAngleFromDistance(distanceSupplier.getAsDouble()), hood)
 
         ).finallyDo((interrupted) -> {
             // Safety: Stop everything when the driver lets go of the button
             shooter.stop();
-            turret.stop();
-            hood.stop();
+            turret.setSpeed(0);        // FIXED: Replaced stop() with setSpeed(0)
+            hood.setMainMotorSpeed(0); // FIXED: Replaced stop() with setMainMotorSpeed(0)
         });
     }
 }

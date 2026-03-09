@@ -49,12 +49,12 @@ public class Shooter extends SubsystemBase {
                         m_leftMotor.getDeviceID(),
                         MotorAlignmentValue.Opposed));
 
-        // Distance → RPM map (tune these)
+         /*  Distance → RPM map (tune these)
         m_rpmMap.put(1.5, 2800.0);
         m_rpmMap.put(2.0, 3200.0);
         m_rpmMap.put(2.5, 3600.0);
         m_rpmMap.put(3.0, 4100.0);
-        m_rpmMap.put(3.5, 4600.0);
+        m_rpmMap.put(3.5, 4600.0);*/
     }
 
     public void setRPM(double targetRPM) {

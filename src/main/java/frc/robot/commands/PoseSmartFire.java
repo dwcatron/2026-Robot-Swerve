@@ -95,12 +95,12 @@ public class PoseSmartFire extends Command {
         // 2. Vision refinement
         // =============================
         double tv = NetworkTableInstance.getDefault()
-                .getTable("limelight_tauret")
+                .getTable("limelight_turret")
                 .getEntry("tv")
                 .getDouble(0.0);
 
         double tx = NetworkTableInstance.getDefault()
-                .getTable("limelight_tauret")
+                .getTable("limelight_turret")
                 .getEntry("tx")
                 .getDouble(0.0);
 

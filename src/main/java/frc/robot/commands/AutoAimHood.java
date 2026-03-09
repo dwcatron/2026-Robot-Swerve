@@ -16,7 +16,7 @@ public class AutoAimHood extends Command {
 
     public AutoAimHood(Hood hood) {
         m_hood = hood;
-        m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
+        m_limelightTable = NetworkTableInstance.getDefault().getTable("limelight_turret");
         addRequirements(m_hood);
     }
 

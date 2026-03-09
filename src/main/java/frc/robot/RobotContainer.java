@@ -36,13 +36,14 @@ import frc.robot.subsystems.*;
 import frc.robot.commands.*;
 
 public class RobotContainer {
+
     /* Drive Constants */
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     private double MaxAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
 
     /* Swerve Requests */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(MaxSpeed * 0.03).withRotationalDeadband(MaxAngularRate * 0.03)
+        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.07)
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -82,6 +83,8 @@ public class RobotContainer {
    public RobotContainer() {
         setupDashboard();
         configureBindings();
+        //drivetrain.seedFieldCentric();
+
         SmartDashboard.putData("Run System Check", systemCheckCommand());
                 m_smartShootToggle = Shuffleboard
        .getTab("Driver")
@@ -95,7 +98,7 @@ public class RobotContainer {
 
     private double getLimelightDistance() {
         // UPDATED NAME HERE
-        double ty = NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("ty").getDouble(0);
+        double ty = NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("ty").getDouble(0);
         return (2.6 - 0.5) / Math.tan(Math.toRadians(30.0 + ty));
     }
 
@@ -119,13 +122,13 @@ public class RobotContainer {
         /* --- DRIVER CONTROLS (Port 0) --- */
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(m_driverController.getLeftY() * MaxSpeed)
-                     .withVelocityY(m_driverController.getLeftX() * MaxSpeed)
-                     .withRotationalRate(m_driverController1.getLeftX() * MaxAngularRate)
+                drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed)
+                     .withVelocityY(-m_driverController.getLeftX() * MaxSpeed)
+                     .withRotationalRate(-m_driverController1.getLeftX() * MaxAngularRate)
             )
         );
 
-        m_driverController1.button(1).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        m_driverController1.povUp().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         m_driverController.rightBumper().whileTrue(Commands.parallel(
             new RunIntake(m_intake, -0.9, 0.9),
@@ -152,17 +155,16 @@ public class RobotContainer {
            // new FireFuel(m_intake, m_indexer, m_shooter, m_turret, m_operatorController, this::getLimelightDistance)
        // );
 
-       m_operatorController.back().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(0.3d), () -> m_hood.stop()));
-       m_operatorController.start().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(-0.3d), () -> m_hood.stop()));
+       m_operatorController.back().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(0.2d), () -> m_hood.stop()));
+       m_operatorController.start().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(-0.2d), () -> m_hood.stop()));
 
         m_operatorController.rightTrigger().whileTrue(
             new Shooter_test(m_shooter)
         );
       
-       m_operatorController.leftBumper().whileTrue(
-         new TurretTrackTarget(m_turret, () -> getLimelightAngle(), this) 
-       );
-
+      /*m_operatorController.leftBumper().whileTrue(
+            new TurretTrackTarget(m_turret, () -> getLimelightAngle(), this) 
+);*/
         // Move Up while holding POV Up
         m_operatorController.povUp().whileTrue(
             m_climber.startEnd(
@@ -225,8 +227,8 @@ public class RobotContainer {
 
         //driverTab.addBoolean("READY TO FIRE", () -> {
             // UPDATED NAMES HERE
-          //  boolean hasTarget = NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("tv").getDouble(0) == 1.0;
-           // boolean turretLocked = Math.abs(NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("tx").getDouble(0)) < 2.0;
+          //  boolean hasTarget = NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("tv").getDouble(0) == 1.0;
+           // boolean turretLocked = Math.abs(NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("tx").getDouble(0)) < 2.0;
             //boolean shooterReady = m_shooter.isAtSpeed(100);
            // return hasTarget && turretLocked && shooterReady;
        // })
@@ -279,12 +281,12 @@ public class RobotContainer {
 
     public double getLimelightAngle() {
         // UPDATED NAME HERE
-        return m_turret.getAngle() + NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("tx").getDouble(0.0);
+        return m_turret.getAngle() + NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("tx").getDouble(0.0);
     }
 
     public void setLimelightPipeline(int pipeline) {
         // UPDATED NAME HERE
-        NetworkTableInstance.getDefault().getTable("limelight_tauret").getEntry("pipeline").setNumber(pipeline);
+        NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("pipeline").setNumber(pipeline);
     }
 
     public Command systemCheckCommand() {
@@ -306,4 +308,5 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
+    
 }

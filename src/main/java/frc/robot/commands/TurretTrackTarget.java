@@ -35,8 +35,8 @@ public void initialize() {
         m_turret.setAngle(targetAngle);
     }
 
-    @Override
+ @Override
     public void end(boolean interrupted) {
-        m_turret.stop();
+        m_turret.setSpeed(0); // Safely stops the motor and disables closed-loop
     }
 }

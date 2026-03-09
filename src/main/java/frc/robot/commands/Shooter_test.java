@@ -5,7 +5,7 @@ import frc.robot.subsystems.Shooter;
 
 public class Shooter_test extends Command {
     private final Shooter m_shooter;
-    private final double m_targetRPM = 6000.0;
+    private final double m_targetRPM = 4500;
 
     public Shooter_test(Shooter shooter) {
         m_shooter = shooter;
