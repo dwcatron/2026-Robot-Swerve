@@ -127,7 +127,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             Pose2d visionPose = new Pose2d(botpose[0], botpose[1], Rotation2d.fromDegrees(botpose[5]));
             double timestamp = Timer.getFPGATimestamp() - (botpose[6] / 1000.0);
             double trust = botpose[9] > 4.0 ? 1.0 : 0.3; 
-            addVisionMeasurement(visionPose, timestamp, VecBuilder.fill(trust, trust, 999999));
+            addVisionMeasurement(visionPose, timestamp, VecBuilder.fill(0.7, 0.7, 0.7));
         }
     }
 

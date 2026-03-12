@@ -35,12 +35,11 @@ public class constants {
     //Climber
      public static final int kClimber_LeftCanId = 26;
      public static final int kClimber_RightCanId = 27;
-     // Inside constants.java
-     public static final int kIndexerCanId = 34;
-
+    
      // Shooter PID Constants
     public static final double kShooter_kP = 0.11; // Adjust if it's too slow to reach speed
     public static final double kShooter_kV = 0.12; // This handles the "Feed Forward" (Volts per RPS)
+    
     // =============================
 // Turret Configuration
 // =============================
@@ -64,7 +63,7 @@ public static final double kShooterToleranceRPM = 150.0;
 // =============================
 
 // Master enable for competition logic
-public static final boolean kEnableSmartShooting = true;
+public static boolean kEnableSmartShooting = true;
 
 // Require turret lock before feeding
 public static final boolean kRequireTurretLock = true;

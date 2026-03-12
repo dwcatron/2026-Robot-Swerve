@@ -20,23 +20,29 @@ public class AutoAimHood extends Command {
         addRequirements(m_hood);
     }
 
-    @Override
+   @Override
     public void execute() {
         // 1. Check if the Limelight actually sees a target ('tv')
         boolean hasTarget = m_limelightTable.getEntry("tv").getDouble(0) == 1.0;
 
-        if (hasTarget) {
-            // 2. Get the vertical angle and run it through the filter
+        // --- NEW: Grab the current Target ID ('tid') from the Limelight ---
+        // Defaults to -1.0 if it can't find a tag ID
+        double currentTagID = m_limelightTable.getEntry("tid").getDouble(-1.0);
+        boolean isCorrectTag = (currentTagID == 9.0); // ONLY aim at Tag 9!
+
+        // 2. Only move the hood if we have a target AND it's the correct tag
+        if (hasTarget && isCorrectTag) {
+            // Get the vertical angle and run it through the filter
             double rawTy = m_limelightTable.getEntry("ty").getDouble(0);
             double filteredTy = m_tyFilter.calculate(rawTy);
 
-            // 3. Distance math: (GoalHeight - CamHeight) / tan(CamAngle + ty)
+            // Distance math: (GoalHeight - CamHeight) / tan(CamAngle + ty)
             double distance = (2.6 - 0.5) / Math.tan(Math.toRadians(30.0 + filteredTy));
 
-            // 4. Send to your existing subsystem method
+            // Send to your existing subsystem method
             m_hood.setAngleFromDistance(distance);
         } else {
-            // If target is lost, stop moving to prevent damage
+            // If target is lost OR it's the wrong tag, stop moving to prevent damage
             m_hood.stop();
         }
     }

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets; 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser; 
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+
 import java.util.Map; 
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.constants; 
 import frc.robot.subsystems.*;
@@ -48,12 +50,14 @@ public class RobotContainer {
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
     private final Telemetry logger = new Telemetry(MaxSpeed);
+    private final SwerveRequest.FieldCentric facingAim = new SwerveRequest.FieldCentric()
+        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+        .withDeadband(MaxSpeed * 0.1);
 
     /* Controllers */
     private final CommandXboxController m_operatorController = new CommandXboxController(0);
     private final CommandXboxController m_driverController = new CommandXboxController(1);
     private final CommandXboxController m_driverController1 = new CommandXboxController(2);
-
 
     /* Subsystems */
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -61,39 +65,65 @@ public class RobotContainer {
     private final Shooter m_shooter = new Shooter();
     private final Hopper m_hopper = new Hopper();
     private final Climber m_climber = new Climber();
-    private final Turret m_turret = new Turret();
+    private final Turret m_turret = new Turret(); 
     private final Hood m_hood = new Hood();
-    private final Indexer m_indexer = new Indexer();
 
     /* --- THE AUTO CHOOSER --- */
     private final SendableChooser<Command> autoChooser;
 
-    /* Restored Command Groups */
-    SequentialCommandGroup Start_Match = new SequentialCommandGroup(
-        new HopperOut(m_hopper, 12));
+    /* --- DASHBOARD ENTRIES --- */
+    private GenericEntry m_smartShootToggle;
 
+    /**
+     * Calculates the rotation speed needed to align the robot chassis with the Limelight target.
+     */
+    private double getLimelightRotationRate() {
+        var table = NetworkTableInstance.getDefault().getTable("limelight_turret");
+        double tv = table.getEntry("tv").getDouble(0); // 1.0 if target is found
+        double tx = table.getEntry("tx").getDouble(0); // Degrees from center (-29.8 to 29.8)
+
+        // If no target is seen, don't spin the robot wildly; return 0.
+        if (tv < 1.0) return 0.0;
+
+        /* * TUNING: 0.05 is your 'P' gain. 
+         * If the robot is too slow to aim, increase this (e.g., 0.07).
+         * If it overshoots or shakes, decrease this (e.g., 0.03).
+         */
+        double rotationOutput = tx * -0.05 * MaxAngularRate;
+        return rotationOutput;
+    }
+
+    /* Restored Command Groups */
+   /* Restored Command Groups */
+    SequentialCommandGroup Start_Match = new SequentialCommandGroup(
+        new HopperOut(m_hopper, 12)
+    );
+
+    // UPDATED: Using FireFuel with all required arguments and a timeout for Auto
     SequentialCommandGroup Shoot = new SequentialCommandGroup(
-        new Shooter_default(m_shooter, 4500));
+        new FireFuel(m_shooter, m_turret, m_intake, this::getLimelightDistance, this::getLimelightTX)
+            .withTimeout(2.5) // Adjust this time! Failsafe so auto doesn't get stuck
+    );
 
     SequentialCommandGroup Climb = new SequentialCommandGroup(
         new L_Three_Climb(m_climber, 22.0),
         new WaitCommand(0.5),
-        new L_Three_Climb(m_climber, -5.0));
-
-   public RobotContainer() {
+        new L_Three_Climb(m_climber, -5.0)
+    );
+    public RobotContainer() {
         setupDashboard();
         configureBindings();
         //drivetrain.seedFieldCentric();
 
         SmartDashboard.putData("Run System Check", systemCheckCommand());
-                m_smartShootToggle = Shuffleboard
-       .getTab("Driver")
-       .add("Smart Shooting Enabled", constants.kEnableSmartShooting)
-       .withWidget(BuiltInWidgets.kToggleSwitch)
-       .getEntry();
+
         // This must be called AFTER configureBindings() so it knows about your NamedCommands!
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Routine", autoChooser);
+    }
+
+    private double getLimelightTX() {
+        return NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("tx").getDouble(0);
     }
 
     private double getLimelightDistance() {
@@ -106,15 +136,16 @@ public class RobotContainer {
         return NetworkTableInstance.getDefault().getTable("limelight-climber").getEntry("tx").getDouble(0);
     }
     
-    public void periodic() {} 
+    public void periodic() {
+        // Read the smart shooting toggle from Shuffleboard each loop
+        constants.kEnableSmartShooting = m_smartShootToggle.getBoolean(true);
+    } 
 
     private void configureBindings() {
         /* --- PATHPLANNER / NAMED COMMANDS --- */
         NamedCommands.registerCommand("START", Start_Match);
         NamedCommands.registerCommand("Shoot", Shoot);
         NamedCommands.registerCommand("Climb", Climb);
-        
-        NamedCommands.registerCommand("AutoPrep", VisionAimAndReady.getCommand(m_shooter, m_turret, m_hood, this::getLimelightDistance));
         NamedCommands.registerCommand("AlignToTower", 
             drivetrain.applyRequest(() -> drive.withRotationalRate(getClimberTagOffset() * -0.05))
             .until(() -> Math.abs(getClimberTagOffset()) < 1.0).withTimeout(2.0));
@@ -130,13 +161,9 @@ public class RobotContainer {
 
         m_driverController1.povUp().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        m_driverController.rightBumper().whileTrue(Commands.parallel(
-            new RunIntake(m_intake, -0.9, 0.9),
-            Commands.startEnd(() -> m_indexer.setPercent(-0.6), m_indexer::stop, m_indexer)
-        ));
-
- 
-
+        m_driverController.rightBumper().whileTrue(
+            new RunIntake(m_intake, -0.9, 0.9)
+        );
 
         m_driverController.start().and(m_driverController.b()).whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-m_driverController.getLeftY(), -m_driverController.getLeftX()))
@@ -148,23 +175,24 @@ public class RobotContainer {
         m_driverController.start().and(m_driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         /* --- OPERATOR CONTROLS (Port 1) --- */
-      //  m_operatorController.start().toggleOnTrue(
-      //  VisionAimAndReady.getCommand(m_shooter, m_turret, m_hood, this::getLimelightDistance)
-      //  );
-        //m_operatorController.rightTrigger().whileTrue(
-           // new FireFuel(m_intake, m_indexer, m_shooter, m_turret, m_operatorController, this::getLimelightDistance)
-       // );
+        //  m_operatorController.start().toggleOnTrue(
+        //  VisionAimAndReady.getCommand(m_shooter, m_turret, m_hood, this::getLimelightDistance)
+        //  );
 
-       m_operatorController.back().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(0.2d), () -> m_hood.stop()));
-       m_operatorController.start().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(-0.2d), () -> m_hood.stop()));
+        m_operatorController.back().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(0.2d), () -> m_hood.stop()));
+        m_operatorController.start().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(-0.2d), () -> m_hood.stop()));
 
-        m_operatorController.rightTrigger().whileTrue(
-            new Shooter_test(m_shooter)
-        );
-      
-      /*m_operatorController.leftBumper().whileTrue(
+        // Inside configureBindings()
+        m_driverController.leftBumper().whileTrue(drivetrain.applyRequest(() -> 
+            facingAim.withVelocityX(-m_driverController.getLeftY() * MaxSpeed)
+                     .withVelocityY(-m_driverController.getLeftX() * MaxSpeed)
+                     .withRotationalRate(getLimelightRotationRate()) 
+        ));
+        
+        /*m_operatorController.leftBumper().whileTrue(
             new TurretTrackTarget(m_turret, () -> getLimelightAngle(), this) 
-);*/
+        );*/
+
         // Move Up while holding POV Up
         m_operatorController.povUp().whileTrue(
             m_climber.startEnd(
@@ -189,16 +217,19 @@ public class RobotContainer {
             new L_Three_Climb(m_climber, 22.0)
         ));
 
-       m_operatorController.x().whileTrue(Commands.parallel(
-            new RunIntakeOut(m_intake, 0.9, -0.9),
-            new RunIndexer(m_indexer, 0.6) 
-        ));
+        m_operatorController.x().whileTrue(
+            new RunIntakeOut(m_intake, 0.9, -0.9)
+        );
 
-        m_operatorController.a().whileTrue(Commands.parallel(
-            new RunIntake(m_intake, -0.9, 0.9),
-            Commands.startEnd(() -> m_indexer.setPercent(-0.6), m_indexer::stop, m_indexer)
-        ));
+        m_operatorController.a().whileTrue(
+            new RunIntake(m_intake, -0.9, 0.9)
+        );
 
+        // Operator Right Trigger: Unified Smart Fire
+        m_operatorController.rightTrigger().whileTrue(
+            new FireFuel(m_shooter, m_turret, m_intake, this::getLimelightDistance, this::getLimelightTX)
+        );
+        
         /* --- SYSTEM UTILITIES --- */
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
@@ -220,23 +251,10 @@ public class RobotContainer {
         
         drivetrain.registerTelemetry(logger::telemeterize);
     }
-    private final GenericEntry m_smartShootToggle;
+
     private void setupDashboard() {
-
         ShuffleboardTab driverTab = Shuffleboard.getTab("Driver");
-
-        //driverTab.addBoolean("READY TO FIRE", () -> {
-            // UPDATED NAMES HERE
-          //  boolean hasTarget = NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("tv").getDouble(0) == 1.0;
-           // boolean turretLocked = Math.abs(NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("tx").getDouble(0)) < 2.0;
-            //boolean shooterReady = m_shooter.isAtSpeed(100);
-           // return hasTarget && turretLocked && shooterReady;
-       // })
-        //.withWidget(BuiltInWidgets.kBooleanBox)
-       // .withPosition(0, 0)
-       // .withSize(3, 3)
-       // .withProperties(Map.of("Color when true", "Lime", "Color when false", "Red"));
-
+        
         // FIX: Using an explicit lambda here stops the (String, Shooter) compiler crash!
         driverTab.addDouble("Shooter RPM", () -> m_shooter.getCurrentRPM())
         .withWidget(BuiltInWidgets.kDial)
@@ -275,8 +293,11 @@ public class RobotContainer {
         .withSize(2, 1)
         .withProperties(Map.of("min", -30, "max", 30)); 
 
-
-
+        m_smartShootToggle = Shuffleboard
+            .getTab("Driver")
+            .add("Smart Shooting Enabled", constants.kEnableSmartShooting)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .getEntry();
     }
 
     public double getLimelightAngle() {
@@ -294,8 +315,6 @@ public class RobotContainer {
             Commands.print("Starting System Check..."),
             m_intake.runOnce(() -> m_intake.setSpeed(0.2, 0.2)).withTimeout(0.5),
             m_intake.runOnce(() -> m_intake.stop()),
-            m_indexer.runOnce(() -> m_indexer.setPercent(0.3)).withTimeout(0.5),
-            m_indexer.runOnce(() -> m_indexer.stop()),
             m_turret.runOnce(() -> m_turret.setSpeed(0.1)).withTimeout(0.3),
             m_turret.runOnce(() -> m_turret.stop()),
             m_shooter.runOnce(() -> m_shooter.setRPM(500)).withTimeout(1.0),
@@ -308,5 +327,4 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
-    
 }
