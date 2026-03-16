@@ -94,9 +94,7 @@ public class RobotContainer {
 
     /* Restored Command Groups */
    /* Restored Command Groups */
-    SequentialCommandGroup Start_Match = new SequentialCommandGroup(
-        new HopperOut(m_hopper, 12)
-    );
+    SequentialCommandGroup Start_Match = new SequentialCommandGroup();
 
     // UPDATED: Using FireFuel with all required arguments and a timeout for Auto
     SequentialCommandGroup Shoot = new SequentialCommandGroup(
