@@ -29,6 +29,7 @@ public class Robot extends TimedRobot {
         // THIS is where WPILib wants you to create your RobotContainer!
         // By the time this runs, the robot is fully awake and ready for hardware.
         m_robotContainer = new RobotContainer();
+        edu.wpi.first.wpilibj.DataLogManager.start();
     }
 
     @Override
@@ -88,4 +89,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {}
+
+    
 }
