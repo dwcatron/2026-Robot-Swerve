@@ -1,62 +1,70 @@
 package frc.robot.commands;
 
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Hood;
-import frc.robot.subsystems.Intake; // Assuming you have an intake/hopper subsystem
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Turret;
 import java.util.function.DoubleSupplier;
+
 
 public class FireFuel extends Command {
     private final Shooter m_shooter;
+    private final Turret m_turret;
     private final Hood m_hood;
     private final Intake m_intake;
-    
-    // We pass the Limelight distance in as a supplier so it updates every loop!
+   
     private final DoubleSupplier m_distanceSupplier;
 
-    public FireFuel(Shooter shooter, Hood hood, Intake intake, DoubleSupplier distanceSupplier) {
+
+    public FireFuel(Shooter shooter, Turret turret, Hood hood, Intake intake, DoubleSupplier distanceSupplier) {
         m_shooter = shooter;
+        m_turret = turret;
         m_hood = hood;
         m_intake = intake;
         m_distanceSupplier = distanceSupplier;
 
-        // The command needs to "own" these subsystems while it runs
-        addRequirements(shooter, hood, intake);
+
+        // The command needs to "own" all four subsystems while it runs
+        addRequirements(shooter, turret, hood, intake);
     }
+
 
     @Override
     public void initialize() {
-        // Optional: Turn on Limelight LEDs here if you keep them off by default
+        // Start the Turret's internal Limelight tracking mode immediately
+        m_turret.startTracking();
     }
+
 
     @Override
     public void execute() {
-        // 1. Get the live distance from the Limelight
         double currentDistance = m_distanceSupplier.getAsDouble();
 
-        // 2. Tell the Hood and Shooter to look at their maps and adjust!
+
+        // 1. Tell the Hood and Shooter to adjust based on their interpolation maps
         m_hood.setAngleFromDistance(currentDistance);
         m_shooter.setRPMFromDistance(currentDistance);
 
-        // (If you have a Turret, you would also tell it to track the target here)
 
-        // 3. THE PRE-FLIGHT CHECKLIST
-        // We only spin the intake to feed the note/fuel IF both are ready.
-        if (m_shooter.isAtSpeed() && m_hood.isAtPosition()) {
-            // FIRE!
-            m_intake.feedShooter(); 
+        // 2. THE PRE-FLIGHT CHECKLIST
+        // We only spin the intake to feed the note IF all three mechanisms are ready!
+        // FIX: Removed the "50.0" argument since Shooter handles its own tolerance now
+        if (m_shooter.isAtSpeed() && m_hood.isAtPosition() && m_turret.isOnTarget()) {
+            m_intake.feedShooter();
         } else {
-            // Hold the game piece steady while we wait for the motors to catch up
-            m_intake.stop(); 
+            // Hold the game piece steady while we wait for motors/aim to catch up
+            m_intake.stop();
         }
     }
 
+
     @Override
     public boolean isFinished() {
-        // We return false so this command runs for as long as the driver holds the button.
-        // Once they let go, it is interrupted and the end() method is called.
-        return false; 
+        return false; // Runs as long as the button is held
     }
+
 
     @Override
     public void end(boolean interrupted) {
@@ -64,5 +72,6 @@ public class FireFuel extends Command {
         m_shooter.stop();
         m_hood.stop();
         m_intake.stop();
+        m_turret.stop(); // Stop the turret from tracking wildly
     }
 }

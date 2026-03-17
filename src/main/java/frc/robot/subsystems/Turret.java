@@ -34,8 +34,8 @@ public class Turret extends SubsystemBase {
                               constants.kTurretI,
                               constants.kTurretD);
     // ── Vision-tracking PD gains (ported from TurretTemporary) ───────
-    private double m_trackingKp = 0.0001;
-    private double m_trackingKd = 0.0;
+    private double m_trackingKp = 0.02;
+    private double m_trackingKd = 0.001;
     private double m_trackingLastError = 0.0;
     private double m_trackingGoalX = 0.0;          // desired tx offset
     private double m_trackingAngleTolerance = 0.2;  // degrees
@@ -211,6 +211,12 @@ public class Turret extends SubsystemBase {
     /** True when the subsystem is actively tracking via Limelight. */
     public boolean isTracking() {
         return m_mode == TurretMode.VISION_TRACKING;
+    }
+    /** True if the turret is currently tracking and aimed perfectly at the target */
+    public boolean isOnTarget() {
+        return m_mode == TurretMode.VISION_TRACKING
+            && hasVisionTarget()
+            && Math.abs(m_trackingLastError) < m_trackingAngleTolerance;
     }
     /** True when Limelight sees any valid target. */
     public boolean hasVisionTarget() {
