@@ -71,7 +71,6 @@ public class RobotContainer {
     private final Intake m_intake = new Intake();
     private final Shooter m_shooter = new Shooter();
     private final Hopper m_hopper = new Hopper();
-    private final Climber m_climber = new Climber();
     private final Turret m_turret = new Turret();
     private final Hood m_hood = new Hood();
 
@@ -117,11 +116,7 @@ public class RobotContainer {
     );
 
 
-    SequentialCommandGroup Climb = new SequentialCommandGroup(
-        new L_Three_Climb(m_climber, 22.0),
-        new WaitCommand(0.5),
-        new L_Three_Climb(m_climber, -5.0)
-    );
+ 
     public RobotContainer() {
         setupDashboard();
         configureBindings();
@@ -149,9 +144,6 @@ public class RobotContainer {
     }
 
 
-    private double getClimberTagOffset() {
-        return NetworkTableInstance.getDefault().getTable("limelight-climber").getEntry("tx").getDouble(0);
-    }
    
     public void periodic() {
         // Read the smart shooting toggle from Shuffleboard each loop
@@ -163,10 +155,6 @@ public class RobotContainer {
         /* --- PATHPLANNER / NAMED COMMANDS --- */
         NamedCommands.registerCommand("START", Start_Match);
         NamedCommands.registerCommand("Shoot", Shoot);
-        NamedCommands.registerCommand("Climb", Climb);
-        NamedCommands.registerCommand("AlignToTower",
-            drivetrain.applyRequest(() -> drive.withRotationalRate(getClimberTagOffset() * -0.05))
-            .until(() -> Math.abs(getClimberTagOffset()) < 1.0).withTimeout(2.0));
 
 
         /* --- DRIVER CONTROLS (Port 0) --- */
@@ -219,28 +207,19 @@ public class RobotContainer {
         );*/
 
 
+<<<<<<< HEAD
+      
+
+       
+=======
         // Move Up while holding POV Up
        m_operatorController.povUp().whileTrue(
     new TrackTargetCommand(m_turret)
 );
+>>>>>>> d987f2f7cdc6a797e3c05f278709f98d5f65c349
 
 
-        // Move Down while holding POV Down
-        m_operatorController.povDown().whileTrue(
-            m_climber.startEnd(
-                () -> m_climber.moveManual(0.3), // Start action
-                () -> m_climber.stopMotor()       // End action
-            )
-        );
 
-
-        m_operatorController.y().onTrue(new SequentialCommandGroup(
-            new L_Three_Climb(m_climber, 22.0),
-            new WaitCommand(0.5),
-            new L_Three_Climb(m_climber, 0.0),
-            new WaitCommand(0.5),
-            new L_Three_Climb(m_climber, 22.0)
-        ));
 
 
         m_operatorController.x().whileTrue(

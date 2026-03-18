@@ -19,7 +19,7 @@ public class Hood extends SubsystemBase {
     private final SparkMax m_motor = new SparkMax(constants.kHoodCanId, MotorType.kBrushless);
     private final CANcoder m_encoder = new CANcoder(constants.kHoodEncoderCanId);
 
-    private final PIDController m_pid = new PIDController(0.1, 0, 0); 
+    private final PIDController m_pid = new PIDController(0.0001, 0, 0.001); 
     private double m_targetAngle = 0;
     private boolean m_isClosedLoop = false;
 
