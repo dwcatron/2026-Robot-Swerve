@@ -74,19 +74,11 @@ public class PassFuel extends Command {
         Rotation2d turretTargetAngle = fieldAngleToTarget.minus(currentPose.getRotation());
        
         // Command the turret to constantly track this angle
-        m_turret.setAngle(turretTargetAngle.getDegrees());
+       // m_turret.setAngle(turretTargetAngle.getDegrees());
 
 
         // 5. THE PRE-FLIGHT CHECKLIST
-        // We only feed the note if the shooter, hood, AND the actively-aiming turret are ready.
-        if (m_shooter.isAtSpeed() &&
-            m_hood.isAtPosition() &&
-            m_turret.isLocked(turretTargetAngle.getDegrees())) {
-           
-            m_intake.feedShooter();
-        } else {
-            m_intake.stop();
-        }
+       
     }
 
 

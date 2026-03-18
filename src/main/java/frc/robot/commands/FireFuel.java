@@ -31,13 +31,8 @@ public class FireFuel extends Command {
     }
 
 
-    @Override
-    public void initialize() {
-        // Start the Turret's internal Limelight tracking mode immediately
-        m_turret.startTracking();
-    }
-
-
+    
+   
     @Override
     public void execute() {
         double currentDistance = m_distanceSupplier.getAsDouble();
@@ -51,14 +46,8 @@ public class FireFuel extends Command {
         // 2. THE PRE-FLIGHT CHECKLIST
         // We only spin the intake to feed the note IF all three mechanisms are ready!
         // FIX: Removed the "50.0" argument since Shooter handles its own tolerance now
-        if (m_shooter.isAtSpeed() && m_hood.isAtPosition() && m_turret.isOnTarget()) {
-            m_intake.feedShooter();
-        } else {
-            // Hold the game piece steady while we wait for motors/aim to catch up
-            m_intake.stop();
-        }
+       
     }
-
 
     @Override
     public boolean isFinished() {
