@@ -82,10 +82,9 @@ public class RobotContainer {
     /* --- DASHBOARD ENTRIES --- */
     private GenericEntry m_smartShootToggle;
 
-
-    /**
-     * Calculates the rotation speed needed to align the robot chassis with the Limelight target.
-     */
+    //limelight entry
+     //Calculates the rotation speed needed to align the robot chassis with the Limelight target.
+     
     private double getLimelightRotationRate() {
         var table = NetworkTableInstance.getDefault().getTable("limelight_turret");
         double tv = table.getEntry("tv").getDouble(0); // 1.0 if target is found
@@ -148,7 +147,11 @@ public class RobotContainer {
     public void periodic() {
         // Read the smart shooting toggle from Shuffleboard each loop
         constants.kEnableSmartShooting = m_smartShootToggle.getBoolean(true);
+
+           
+      
     }
+    
 
 
     private void configureBindings() {
@@ -168,6 +171,7 @@ public class RobotContainer {
 
 
         m_driverController1.povUp().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        m_operatorController.povUp().whileTrue( new TrackTargetCommand(m_turret));
 
         m_driverController.rightBumper().whileTrue(
             new RunIntake(m_intake, -0.9, 0.9)
@@ -207,16 +211,9 @@ public class RobotContainer {
         );*/
 
 
-<<<<<<< HEAD
       
 
        
-=======
-        // Move Up while holding POV Up
-       m_operatorController.povUp().whileTrue(
-    new TrackTargetCommand(m_turret)
-);
->>>>>>> d987f2f7cdc6a797e3c05f278709f98d5f65c349
 
 
 
@@ -291,6 +288,7 @@ public class RobotContainer {
 
 
     private void setupDashboard() {
+        
         ShuffleboardTab driverTab = Shuffleboard.getTab("Driver");
        
         // FIX: Using an explicit lambda here stops the (String, Shooter) compiler crash!
@@ -330,20 +328,11 @@ public class RobotContainer {
         .withSize(2, 1)
         .withProperties(Map.of("min", -30, "max", 30));
 
-
-        m_smartShootToggle = Shuffleboard
-            .getTab("Driver")
-            .add("Smart Shooting Enabled", constants.kEnableSmartShooting)
-            .withWidget(BuiltInWidgets.kToggleSwitch)
-            .getEntry();
+        // --- TURRET LIMELIGHT TX WIDGET ---
+        
     }
 
 
-
-    public void setLimelightPipeline(int pipeline) {
-        // UPDATED NAME HERE
-        NetworkTableInstance.getDefault().getTable("limelight_turret").getEntry("pipeline").setNumber(pipeline);
-    }
 
 
     public Command systemCheckCommand() {

@@ -16,8 +16,8 @@ public class Turret extends SubsystemBase {
     private final SparkMax turretMotor = new SparkMax(10, MotorType.kBrushless);
     private final CANcoder turretEncoder = new CANcoder(20);
 
-    private final double MIN_POSITION = 0.2;
-    private final double MAX_POSITION = 0.9;
+    private final double MIN_POSITION = 0.0;
+    private final double MAX_POSITION = 1;
 
     public Turret() {
 

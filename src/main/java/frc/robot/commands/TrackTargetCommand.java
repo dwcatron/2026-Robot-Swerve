@@ -20,7 +20,7 @@ public class TrackTargetCommand extends Command {
     public TrackTargetCommand(Turret turret) {
         this.turret = turret;
 
-        limelightTable = NetworkTableInstance.getDefault().getTable("limelight_tauret");
+        limelightTable = NetworkTableInstance.getDefault().getTable("limelight_turret");
 
         addRequirements(turret);
     }
