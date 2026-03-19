@@ -9,7 +9,7 @@
     
     // Tuning constant: Start with 0.02. 
     // If it moves AWAY from the target, change this to -0.02
-    private final double kP = 0.1; 
+    private final double kP = 0.05; 
     private final String limelightName = "limelight-turret";
 
     public Dougs_Turret_Test(Turret turret) {
@@ -29,7 +29,7 @@
     double motorSpeed = tx * kP;
 
     // If we are within 1 degree of center, just stop.
-    if (Math.abs(tx) < 1.0) {
+    if ((Math.abs(tx) < 1.0) && Math.abs(tx) > -1.0) {
     m_turret.stop();
     } else {
     m_turret.setSpeed(motorSpeed);
