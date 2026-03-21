@@ -17,9 +17,9 @@ public class constants {
      public static final int kHoodCanId = 29;
      public static final double kHoodOffset = 17.2265625; // Adjust once the hood is working and we know what zero is
      //Turret
-     public static final double kTurretP = 0.05;
+     /*public static final double kTurretP = 0.05;
      public static final double kTurretI = 0.0;
-     public static final double kTurretD = 0.0;
+     public static final double kTurretD = 0.0;*/
      public static final int kTurretCanId = 28;
      public static final int kTurretEncoderCanId = 31;
      public static final double kTurretMinAngle = 104; // Degrees

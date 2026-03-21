@@ -1,5 +1,5 @@
 package frc.robot.subsystems;
-
+import frc.robot.generated.constants;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -11,8 +11,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Turret extends SubsystemBase {
-    private final SparkMax turretMotor = new SparkMax(10, MotorType.kBrushless);
-    private final CANcoder turretEncoder = new CANcoder(20);
+    private final SparkMax turretMotor = new SparkMax(constants.kTurretCanId, MotorType.kBrushless);
+    private final CANcoder turretEncoder = new CANcoder(constants.kTurretEncoderCanId);
 
     // 2026 Tip: Use Shuffleboard to find these exact numbers for your 'REBUILT' robot
     private final double MIN_POSITION = 0.15; 

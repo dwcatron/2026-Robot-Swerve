@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class TurretSubsystem extends SubsystemBase {
 
     // ===================== HARDWARE =====================
-
-    private final SparkMax motor =
+ private final SparkMax motor =
+   
             new SparkMax(10, MotorType.kBrushless);  // CHANGE CAN ID
 
     private final CANcoder encoder =
