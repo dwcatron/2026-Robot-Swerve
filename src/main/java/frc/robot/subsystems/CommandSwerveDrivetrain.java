@@ -103,7 +103,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 (speeds, feedforwards) -> this.setControl(AutoRequest.withSpeeds(speeds)), // Drives the robot
                 new PPHolonomicDriveController(
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID (Moving X/Y)
-                    new PIDConstants(5.0, 0.0, 0.0)  // Rotation PID (Spinning)
+                    new PIDConstants(10.0, 0.0, 0.0)  // Rotation PID (Spinning)
                 ),
                 config, // Passes in the GUI configuration
                 () -> {
@@ -124,20 +124,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     /* --- VISION LOGIC --- */
-    public void updatePoseFromLimelight(String tableName) {
-        double[] botpose = NetworkTableInstance.getDefault().getTable(tableName).getEntry("botpose_wpiblue").getDoubleArray(new double[0]);
-        if (botpose.length >= 8 && botpose[7] > 0) {
-            Pose2d visionPose = new Pose2d(botpose[0], botpose[1], Rotation2d.fromDegrees(botpose[5]));
-            double timestamp = Timer.getFPGATimestamp() - (botpose[6] / 1000.0);
-            double trust = botpose[9] > 4.0 ? 1.0 : 0.3; 
-            addVisionMeasurement(visionPose, timestamp, VecBuilder.fill(0.7, 0.7, 0.7));
-        }
+   public void updatePoseFromLimelight(String tableName) {
+    double[] botpose = NetworkTableInstance.getDefault().getTable(tableName).getEntry("botpose_wpiblue").getDoubleArray(new double[0]);
+    
+    if (botpose.length >= 8 && botpose[7] > 0) {
+        Pose2d visionPose = new Pose2d(botpose[0], botpose[1], Rotation2d.fromDegrees(botpose[5]));
+        double timestamp = Timer.getFPGATimestamp() - (botpose[6] / 1000.0);
+        double xyStdDev = botpose[9] > 4.0 ? 0.2 : 0.8; 
+        double thetaStdDev = 999.0; 
+        addVisionMeasurement(visionPose, timestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
     }
+}
 
     @Override
     public void periodic() {
-        updatePoseFromLimelight("limelight-front");
-        //updatePoseFromLimelight("limelight-climber");
+        updatePoseFromLimelight("limelight-fuel");
 
         Pose2d pose = getState().Pose;
         SmartDashboard.putNumber("Robot X", pose.getX());

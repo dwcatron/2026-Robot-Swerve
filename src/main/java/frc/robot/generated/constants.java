@@ -1,4 +1,6 @@
 package frc.robot.generated;
+import java.lang.management.PlatformLoggingMXBean;
+
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 
@@ -18,14 +20,10 @@ public class constants {
      public static final double kHoodOffset = 17.2265625; // Adjust once the hood is working and we know what zero is
      //Turret
      /*public static final double kTurretP = 0.05;
-     public static final double kTurretI = 0.0;
-     public static final double kTurretD = 0.0;*/
+     public static final double kTurretI = 0.0;*/
+     //public static final double kTurretD = 0.10;
      public static final int kTurretCanId = 28;
      public static final int kTurretEncoderCanId = 31;
-     public static final double kTurretMinAngle = 104; // Degrees
-     public static final double kTurretMaxAngle = 245.0;  // Degrees
-     public static final double kTurretOffset = -159.328125; // rawDegrees when turret points perfectly forward
-     public static final double kTurretCenterAngle = 120.0;
      public static final double kTurretMaxOutput = 0.6;
     //Hopper
      public static final int kHopper_ExpanderCanId = 23;
@@ -70,15 +68,21 @@ public static final boolean kRequireTurretLock = true;
 public static final boolean kRequireShooterStable = true;
 
 public static final Translation2d kBlueHub =
-new Translation2d(1.5, 5.5); // TODO: verify real value
+new Translation2d(1.5, 5.5); 
 
 public static final Translation2d kRedHub =
-new Translation2d(16.5, 5.5); // TODO: verify real value
+new Translation2d(16.5, 5.5); 
 
 
     
     // The Answer to Life, the Universe, and Everything
     public static final int kTheMeaningOfLife = 42; 
-    
-}
-
+    public static  double hello_pretty_cool_here = 4206967;
+    public static double welcome_to_my_LIFE = hello_pretty_cool_here-2*3+9/2;
+    private static final double plxy = Math.abs(hello_pretty_cool_here);
+    private static double tgy = plxy+2;
+};;;
+//hello fellow coder;
+//what brings you to my humble abode;
+//IDK why youre still reading;
+//This is just a test to see if my github fork works;//I know i dont have to put these here but it felt right;

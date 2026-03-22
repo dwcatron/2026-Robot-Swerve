@@ -50,7 +50,7 @@ public class RobotContainer {
 
     /* Swerve Requests */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.07)
+        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1)
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -108,12 +108,6 @@ public class RobotContainer {
     SequentialCommandGroup Start_Match = new SequentialCommandGroup();
 
 
-    SequentialCommandGroup Shoot = new SequentialCommandGroup(
-        new FireFuel(m_shooter, m_turret, m_hood, m_intake, this::getLimelightDistance)
-            .withTimeout(2.5)
-    );
-
-
  
     public RobotContainer() {
         setupDashboard();
@@ -155,7 +149,7 @@ public class RobotContainer {
     private void configureBindings() {
         /* --- PATHPLANNER / NAMED COMMANDS --- */
   
-        NamedCommands.registerCommand("Shoot", Shoot);
+      
         
  
 
@@ -170,28 +164,17 @@ public class RobotContainer {
 
 
         m_driverController1.povUp().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        m_driverController.rightBumper().whileTrue(Commands.parallel(
-            new RunIntake(m_intake, -0.9, 0.9)
-        ));
+       
         
-        m_operatorController.povUp().whileTrue( new TrackTargetCommand(m_turret));
         m_operatorController.povRight().whileTrue(new Dougs_Turret_Test(m_turret));
-
-        m_driverController.rightBumper().whileTrue(
-            new RunIntake(m_intake, -0.9, 0.9)
-        );
+        m_operatorController.povDown().whileTrue(new Turret_Home(m_turret));
+     
 
 
-        m_driverController.start().and(m_driverController.b()).whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-m_driverController.getLeftY(), -m_driverController.getLeftX()))
-        ));
+      
 
 
-        m_driverController.back().and(m_driverController.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        m_driverController.back().and(m_driverController.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        m_driverController.start().and(m_driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        m_driverController.start().and(m_driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
+     
       
 
        m_operatorController.back().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(0.2d), () -> m_hood.stop()));
@@ -207,25 +190,7 @@ public class RobotContainer {
         m_operatorController.start().whileTrue(m_hood.runEnd(() -> m_hood.setMainMotorSpeed(-0.2d), () -> m_hood.stop()));
 
 
-        // Inside configureBindings()
-        m_driverController.leftBumper().whileTrue(drivetrain.applyRequest(() ->
-            facingAim.withVelocityX(-m_driverController.getLeftY() * MaxSpeed)
-                     .withVelocityY(-m_driverController.getLeftX() * MaxSpeed)
-                     .withRotationalRate(getLimelightRotationRate())
-        ));
-       
-        /*m_operatorController.leftBumper().whileTrue(
-            new TurretTrackTarget(m_turret, () -> getLimelightAngle(), this)
-        );*/
-
-
       
-
-       
-
-
-
-
 
         m_operatorController.x().whileTrue(
             new RunIntakeOut(m_intake, 0.9, -0.9)
@@ -242,15 +207,7 @@ public class RobotContainer {
         );
 
 
-        /*m_operatorController.iftherobotdoesn'tdrive().whileTrue(
-            new CrashOut(m_crashingOut, 100)
-        );*/
-        // Operator Right Trigger: Unified Smart Fire
-        // Operator Right Trigger: Unified Smart Fire
-        // Operator Right Trigger: Unified Smart Fire
-        m_operatorController.rightTrigger().whileTrue(
-            new FireFuel(m_shooter, m_turret, m_hood, m_intake, this::getLimelightDistance)
-        );
+       
 
 
         // --- REAR INTAKE DEPLOYMENT ---
@@ -284,11 +241,7 @@ public class RobotContainer {
             SmartDashboard.putNumber("Intake/Front Amps", amps);
             SmartDashboard.putBoolean("Intake/JAMMED", amps > 35.0);
            
-            if (amps > 35.0) {
-                m_driverController.getHID().setRumble(RumbleType.kBothRumble, 0.5);
-            } else {
-                m_driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
-            }
+           
         }, m_intake).ignoringDisable(true).schedule();
        
         drivetrain.registerTelemetry(logger::telemeterize);
